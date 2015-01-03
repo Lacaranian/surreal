@@ -48,11 +48,17 @@ instance Num Surreal where
 		| (sx == -sOne)	= -sy
 		| (sy == -sOne)	= -sx
 		| (sx == sZero) || (sy == sZero) = sZero
-		| otherwise	= Surreal (S.union (S.singleton (sxl*sy + sx*syl - sxl*syl)) (S.singleton (sxr*sy + sx*syr - sxr*sxr))) (S.union (S.singleton (sxl*sy + sx*syr - sxl*syr)) (S.singleton (sxr*sy + sx*syl - sxr*sxl))) where
-			sxl = S.findMax (left sx)
-			sxr = S.findMin (right sx)
-			syl = S.findMax (left sy)
-			syr = S.findMin (right sy)
+		| otherwise	= Surreal (S.union (l1) (l2)) (S.union (r1) (r2)) where
+			map2 op s1 s2 = (S.unions . S.toList) (S.map (\setelem -> S.map (op setelem) s2) s1)
+			multsets set1 set2 = map2 (*) set1 set2
+			multnumset sn set = if set == sNull then sNull else S.map (*sn) set
+			addsets set1 set2 = if set1 == sNull || set2 == sNull then sNull else map2 (+) set1 set2
+			subtractsets set1 set2 = if set1 == sNull || set2 == sNull then sNull else map2 (-) set1 set2
+			l1 = ((multnumset sy (left sx)) `addsets` ((multnumset sx (left sy)) `subtractsets` (multsets (left sx) (left sy))))
+			l2 = ((multnumset sy (right sx)) `addsets` ((multnumset sx (right sy)) `subtractsets` (multsets (right sx) (right sy))))
+			r1 = ((multnumset sy (left sx)) `addsets` ((multnumset sx (right sy)) `subtractsets` (multsets (left sx) (right sy))))
+			r2 = ((multnumset sy (right sx)) `addsets` ((multnumset sx (left sy)) `subtractsets` (multsets (right sx) (left sy))))
+			
 	fromInteger i
 		| i < 0 	= (-sOne) + fromInteger (i+1)
 		| i == 0	= sZero
@@ -64,6 +70,3 @@ instance Num Surreal where
 		| s < sZero		= -sOne
 		| s == sZero	= sZero
 		| s > sZero		= sOne
-
-main = do
-    putStrLn "Hello"
