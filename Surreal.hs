@@ -107,9 +107,13 @@ instance Fractional Surreal where
         | isPowerOfTwo (denominator r)   = (fromRational $ ((numerator r)-1)%(denominator r)) ~|~ (fromRational $ ((numerator r)+1)%(denominator r))
         | otherwise                      = undefined
     (/) sn sd
-        | sd == sOne = sn
-        | otherwise  = undefined
+        | sd == sZero   = undefined
+        | sd == sOne    = sn
+        | isPowerOfTwo (denominator $ toRational sn)*(numerator $ toRational sd) = fromRational $ (toRational sn)/(toRational sd)
+        | otherwise     = undefined
 
+surrealWithPrecision = undefined
+        
 instance Floating Surreal where
     pi      = undefined
     exp s   = undefined
